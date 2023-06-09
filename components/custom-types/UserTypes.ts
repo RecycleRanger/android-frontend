@@ -1,3 +1,8 @@
+export enum Actions {
+  added = 'added',
+  changed = 'changed',
+  deleted = 'deleted'
+}
 
 export interface Teacher {
   id: number,
