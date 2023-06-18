@@ -6,6 +6,17 @@ import { UsrType } from "../custom-types/UserTypes";
 
 const API_URL = "https://recycle-ranger-api.onrender.com/api/v1";
 
+export interface SuccessResponseSignUpTeacher {
+  username: string;
+  id: number;
+}
+
+export interface ErrorResponseSignUpTeacher {
+  errorMessage: string;
+}
+
+type SignUpTeacherResponse = SuccessResponseSignUpTeacher | ErrorResponseSignUpTeacher;
+
 async function save(key: string, value: string) {
   await SecureStore.setItemAsync(key, value);
 }
@@ -129,31 +140,36 @@ class AuthService {
     deleteValue("access_token")
   }
 
-  register(
+  async register(
     username: string,
     password: string,
-  ) {
-    return axios
-      .post(
-        API_URL + "/auth/signup/teacher",
-        {
-          'username': username,
-          'password': password,
-        },
-        {
-          headers: {
-            'accept': 'application/json',
-            'Content-Type': 'application/json',
+  ): Promise<SignUpTeacherResponse> {
+    return new Promise<SignUpTeacherResponse>((resolve, reject) => {
+      axios
+        .post(
+          API_URL + "/auth/signup/teacher",
+          {
+            'username': username,
+            'password': password,
+          },
+          {
+            headers: {
+              'accept': 'application/json',
+              'Content-Type': 'application/json',
+            }
           }
-        }
-      )
-      .then(response => {
-        return response
-      })
-      .catch(err => {
-        return err.response.data
-      })
+        )
+        .then((response) => {
+          const res: SuccessResponseSignUpTeacher = response.data;
+          resolve(res);
+        })
+        .catch((err) => {
+          const error: ErrorResponseSignUpTeacher = err.response.data.detail;
+          reject(error);
+        })
+    });
   }
+
 
   getCurrentUser() {
     getValue("access_token")
@@ -166,8 +182,6 @@ class AuthService {
       })
   }
 }
-
-const auth = new AuthService();
 
 // auth.login(UsrType.teacher, "UserTestPass", "UserTest");
 // auth.login(UsrType.student, "StudentTestPass", "s", 9);
