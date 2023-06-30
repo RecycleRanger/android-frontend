@@ -11,12 +11,6 @@ export interface SuccessResponseSignUpTeacher {
   id: number;
 }
 
-export interface ErrorResponseSignUpTeacher {
-  errorMessage: string;
-}
-
-type SignUpTeacherResponse = SuccessResponseSignUpTeacher | ErrorResponseSignUpTeacher;
-
 async function save(key: string, value: string) {
   await SecureStore.setItemAsync(key, value);
 }
@@ -143,8 +137,8 @@ class AuthService {
   async register(
     username: string,
     password: string,
-  ): Promise<SignUpTeacherResponse> {
-    return new Promise<SignUpTeacherResponse>((resolve, reject) => {
+  ): Promise<SuccessResponseSignUpTeacher> {
+    return new Promise<SuccessResponseSignUpTeacher>((resolve, reject) => {
       axios
         .post(
           API_URL + "/auth/signup/teacher",
@@ -164,8 +158,7 @@ class AuthService {
           resolve(res);
         })
         .catch((err) => {
-          const error: ErrorResponseSignUpTeacher = err.response.data.detail;
-          reject(error);
+          reject(err.response.data.detail);
         })
     });
   }
