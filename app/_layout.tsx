@@ -1,7 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { SplashScreen, Stack, Slot } from 'expo-router';
+import { SplashScreen, Stack, Slot, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { StatusBar, useColorScheme } from 'react-native';
 // import { StatusBar } from 'expo-status-bar';
@@ -15,7 +15,7 @@ export {
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: 'auth',
+  initialRouteName: 'auth/signup',
 };
 
 export default function RootLayout() {

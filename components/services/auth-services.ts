@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
 
-import { UsrType } from "../custom-types/UserTypes";
+import { UsrType, Teacher, Student } from "../custom-types/UserTypes";
 
 
 const API_URL = "https://recycle-ranger-api.onrender.com/api/v1";
@@ -9,6 +9,13 @@ const API_URL = "https://recycle-ranger-api.onrender.com/api/v1";
 export interface SuccessResponseSignUpTeacher {
   username: string;
   id: number;
+}
+
+export interface LoginSuccessResponse {
+  access_token: string;
+  token_type: string;
+  usr: Teacher | Student;
+  type: UsrType;
 }
 
 async function save(key: string, value: string) {
@@ -61,12 +68,12 @@ type searchParams = {
 }
 
 class AuthService {
-  login(
+  async login(
     usrType: UsrType,
     password: string,
     username: string,
     id?: number,
-  ) {
+  ): Promise<LoginSuccessResponse> {
 
     let loginUrl: string = "";
     let urlSearchParams: searchParams;
@@ -109,25 +116,27 @@ class AuthService {
         break;
       }
     }
-    return axios
-      .post(
-        API_URL + loginUrl,
-        new URLSearchParams({ ...urlSearchParams }),
-        {
-          headers: {
-            'accept': 'application/json',
+
+    return new Promise<LoginSuccessResponse>((resolve, reject) => {
+      axios
+        .post(
+          `${API_URL}${loginUrl}`,
+          urlSearchParams,
+          {
+            headers: {
+              'Accept': "application/json",
+              'Content-Type': "application/x-www-form-urlencoded"
+            }
           }
+        )
+        .then((res) => {
+          const loginResponse: LoginSuccessResponse = res.data;
+          resolve(loginResponse);
         })
-      .then(response => {
-        if (response.data.access_token) {
-          save("access_token", response.data.access_token)
-        }
-        return response.data;
-      })
-      .catch(err => {
-        console.log(err);
-        return err.data;
-      })
+        .catch((err) => {
+          reject(err.response.data.detail);
+        })
+    })
   }
 
   logout() {
@@ -176,7 +185,15 @@ class AuthService {
   }
 }
 
-// auth.login(UsrType.teacher, "UserTestPass", "UserTest");
+// const auth = new AuthService();
+
+// auth.login(UsrType.teacher, "UserTestPass", "Useest")
+//   .then(async (res) => {
+//     console.log(res);
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   })
 // auth.login(UsrType.student, "StudentTestPass", "s", 9);
 // auth.register("UserTest44", "UserTest44Pass")
 
