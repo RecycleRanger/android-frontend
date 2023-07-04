@@ -14,9 +14,10 @@ import {
 import { useRouter, Link } from "expo-router";
 
 import AuthService from "../../../components/services/auth-services";
-import LoadingAnimation from '../../../components/LoadingSpinner';
 import { StateData, SetStateData } from "../../../components/uiElements/LoginDialog";
 import { UsrType } from '../../../components/custom-types/UserTypes';
+import PopUpMessage from '../../../components/uiElements/PopUpMessage';
+import LoadingAnimation from '../../../components/uiElements/LoadingSpinner';
 
 
 export default function StudentLogin() {
@@ -26,36 +27,55 @@ export default function StudentLogin() {
 		buttonPressed: false,
 	});
 	const [switchIsEnabled, setSwitchIsEnabled] = useState<boolean>(false);
-
+    const [visible, setVisible] = useState<boolean>(false);
+    
 	const router = useRouter();
 
 	const logInRequest = () => {
 		console.log(state);
 		if (state.username == "") {
-			ToastAndroid.show("Please provide username. Can't be empty", ToastAndroid.LONG);
+			ToastAndroid.show("Please provide a username or id. Can't be empty", ToastAndroid.LONG);
 		} else if (state.password == "") {
 			ToastAndroid.show("Please provide password. Can't be empty", ToastAndroid.LONG);
 		} else {
 			if (!state.buttonPressed) {
 				setState({ ...state, buttonPressed: true });
+				let id: number = +state.username;
 
-				AuthService.login(UsrType.teacher, state.password, state.username)
-					.then(async (res) => {
-						// TODO: Link to new page
-						ToastAndroid.show("Successfully loged in!", ToastAndroid.LONG);
-						router.push('/');
-						console.log(res);
-					})
-					.catch((err) => {
-						console.log(err);
-						ToastAndroid.show(err, ToastAndroid.LONG);
-						console.log("err");
-					})
-					.finally(() => {
-						setState({ ...state, buttonPressed: false });
-						console.log('Done with request');
-						console.log(state);
-					});
+				switchIsEnabled ?
+					AuthService.login(UsrType.student, state.password, "/ss", id)
+						.then(async (res) => {
+							// TODO: Link to new page
+							ToastAndroid.show("Successfully loged in!", ToastAndroid.LONG);
+							router.push('/');
+							console.log(res);
+						})
+						.catch((err) => {
+							console.log(err);
+							ToastAndroid.show(err, ToastAndroid.LONG);
+							console.log("err");
+						})
+						.finally(() => {
+							setState({ ...state, buttonPressed: false });
+							console.log('Done with request');
+							console.log(state);
+						}) :
+					AuthService.login(UsrType.student, state.password, state.username)
+						.then(async (res) => {
+							ToastAndroid.show("Successfully loged in!", ToastAndroid.LONG);
+							router.push("/");
+							console.log(res);
+						})
+						.catch((err) => {
+							console.log(err);
+							ToastAndroid.show(err, ToastAndroid.LONG);
+							console.log("err");
+						})
+						.finally(() => {
+							setState({ ...state, buttonPressed: false });
+							console.log("Done with request");
+							console.log(state);
+						});
 			}
 		}
 	};
@@ -71,7 +91,7 @@ export default function StudentLogin() {
 					<View style={styles.inputView}>
 						<TextInput
 							style={styles.inputText}
-						  placeholder={switchIsEnabled ? 'id' : 'username'}
+							placeholder={switchIsEnabled ? 'id' : 'username'}
 							onChangeText={text => setState({ ...state, username: text })}
 						/>
 					</View>
@@ -84,7 +104,7 @@ export default function StudentLogin() {
 						/>
 					</View>
 					<View style={styles.switchContainer}>
-					  <Text>Log In with id instead </Text>
+						<Text>Log In with id instead </Text>
 						<Switch
 							trackColor={{ false: '#767577', true: '#6aad5f' }}
 							thumbColor={switchIsEnabled ? "#ffffff" : "#f4f3f4"}
@@ -99,7 +119,10 @@ export default function StudentLogin() {
 				{state.buttonPressed && <LoadingAnimation message="Proccessing Request" />}
 			</KeyboardAvoidingView>
 			<View style={styles.signUpContainer}>
-				<Link href=""><Text style={[styles.text, styles.signUpText]}>Don't have an account? </Text></Link>
+              <Pressable onPress={() => setVisible(!visible)}>
+                <Text style={[styles.text, styles.signUpText]}>Don't have an accout?</Text>
+                { visible && <PopUpMessage message="Please ask your teacher to make you an accout." visible={visible} setVisible={setVisible}/>}
+              </Pressable>
 			</View>
 		</View>
 	);
@@ -175,9 +198,9 @@ const styles = StyleSheet.create({
 		shadowColor: '#171717',
 		elevation: 20,
 	},
-    switchContainer: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'row',
-    }
+	switchContainer: {
+		justifyContent: 'center',
+		alignItems: 'center',
+		flexDirection: 'row',
+	}
 });
