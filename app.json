@@ -16,12 +16,13 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.androidfontend.recycleranger"
     },
     "android": {
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/RecycleRangerLogo.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.recycleranger.androidfontend"
