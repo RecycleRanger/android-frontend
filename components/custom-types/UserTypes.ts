@@ -4,18 +4,30 @@ export enum Actions {
   deleted = 'deleted'
 }
 
-export interface Teacher {
-  id: number,
-  username: string,
-  date_started: string,
+export type Teacher = {
+  id: number;
+  username: string;
+  date_started?: string;
 }
 
-export interface Student {
-  id: number,
-  student_name: string,
-  score: number,
-  class_id: number,
-  numOfTrash: number,
+export function isTeacher(usr: Teacher | Student): usr is Teacher {
+  if ("username" in usr) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export type Student = {
+  id: number;
+  student_name: string;
+  score: number;
+  class_id: number;
+  numOfTrash: number;
+}
+
+export function isStudent(usr: Teacher | Student): usr is Student {
+  return usr.hasOwnProperty('student_name');
 }
 
 export enum UsrType {
@@ -24,6 +36,7 @@ export enum UsrType {
 }
 
 export interface CurrentUsrType {
-  user: Teacher | Student,
-  type: UsrType,
+  token: string;
+  user: Teacher | Student;
+  type: UsrType;
 }

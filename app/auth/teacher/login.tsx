@@ -6,10 +6,12 @@ import { useRouter, Link } from "expo-router";
 import AuthService from "../../../components/services/auth-services";
 import LoginDialog, { StateData, SetStateData } from "../../../components/uiElements/LoginDialog";
 import { UsrType } from '../../../components/custom-types/UserTypes';
+import { useAuth } from '../../../components/atoms/UserContext';
 
 
 export default function TeacherLogin() {
-    const router = useRouter();
+	const router = useRouter();
+	const {currUsr, setCurrUsr} = useAuth();
 
 	const logInRequest = (state: StateData, setState: SetStateData) => {
 		console.log(state);
@@ -25,7 +27,8 @@ export default function TeacherLogin() {
 					.then(async (res) => {
 						// TODO: Link to new page
 						ToastAndroid.show("Successfully loged in!", ToastAndroid.LONG);
-                        router.push('/');
+						// router.push('/');
+                        setCurrUsr(res);
 						console.log(res);
 					})
 					.catch((err) => {
@@ -43,36 +46,36 @@ export default function TeacherLogin() {
 	};
 
 	return (
-        <View style={styles.container}>
+		<View style={styles.container}>
 			<LoginDialog
 				title="Log In"
 				button="Log In"
 				onPressFunction={logInRequest}
 			/>
 			<View style={styles.signUpContainer}>
-              <Text style={styles.text}>Don't have an account? </Text>
-              <Link href='../signup'><Text style={[styles.signUpText, styles.text]}>Sign Up</Text></Link>
+				<Text style={styles.text}>Don't have an account? </Text>
+				<Link href='../signup'><Text style={[styles.signUpText, styles.text]}>Sign Up</Text></Link>
 			</View>
-        </View>
+		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'column',
-        flexGrow: 1,
-        justifyContent: 'space-between',
-    },
-    signUpContainer: {
-        justifyContent: 'center',
-        flexDirection: 'row',
-        marginBottom: 20,
-    },
-    text: {
-        fontSize: 16,
-    },
-    signUpText: {
-        color: "#6aad5f",
-        textDecorationLine: 'underline'
-    }
+	container: {
+		flexDirection: 'column',
+		flexGrow: 1,
+		justifyContent: 'space-between',
+	},
+	signUpContainer: {
+		justifyContent: 'center',
+		flexDirection: 'row',
+		marginBottom: 20,
+	},
+	text: {
+		fontSize: 16,
+	},
+	signUpText: {
+		color: "#6aad5f",
+		textDecorationLine: 'underline'
+	}
 });

@@ -1,12 +1,16 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack, Slot, useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
-import { StatusBar, useColorScheme } from 'react-native';
-// import { StatusBar } from 'expo-status-bar';
+import React, { useEffect, useState, useContext } from 'react';
+import { StatusBar, useColorScheme, Text } from 'react-native';
 
 import { LightTheme } from '../components/Themes';
+import AuthService from "../components/services/auth-services";
+import { UsrType, Teacher, Student, CurrentUsrType } from '../components/custom-types/UserTypes';
+import LoadingAnimation from '../components/LoadingSpinner';
+import { UserContext, Provider, useAuth } from '../components/atoms/UserContext';
+
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -31,23 +35,51 @@ export default function RootLayout() {
   }, [error]);
 
   return (
-    <>
-      {/* Keep the splash screen open until the assets have loaded. In the future, we should just support async font loading with a native version of font-display. */}
-      {!loaded && <SplashScreen />}
-      {loaded && <RootLayoutNav />}
-    </>
+      <>
+        {/* Keep the splash screen open until the assets have loaded. In the future, we should just support async font loading with a native version of font-display. */}
+        {!loaded && <SplashScreen />}
+        {loaded && <AppRoot />}
+      </>
+  );
+}
+
+function AppRoot() {
+  return (
+	<Provider>
+	  <RootLayoutNav />
+	</Provider>
   );
 }
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const {currUsr, setCurrUsr} = useAuth();
+
+  useEffect(() => {
+    console.log("i run");
+    AuthService.getCurrentUser()
+      .then((res) => {
+        console.log("i run");
+
+        setCurrUsr(res);
+      })
+      .catch((err) => {
+        router.push('/auth/')
+      })
+      .finally(() => {
+        setLoading(false);
+      })
+  }, []);
 
   return (
-    <>
-      <ThemeProvider value={colorScheme === 'dark' ? LightTheme : DefaultTheme}>
-        <Slot />
-      </ThemeProvider>
-      <StatusBar barStyle='dark-content' hidden={false} />
-    </>
+        <>
+          <ThemeProvider value={colorScheme === 'dark' ? LightTheme : DefaultTheme}>
+            <Slot />
+          </ThemeProvider>
+          <StatusBar barStyle='dark-content' hidden={false} />
+          {loading && <LoadingAnimation message='Getting User info' />}
+        </>
   );
 }

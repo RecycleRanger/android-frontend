@@ -1,10 +1,10 @@
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
+global.Buffer = global.Buffer || require('buffer').Buffer;
 
-import { UsrType, Teacher, Student } from "../custom-types/UserTypes";
+import { UsrType, Teacher, Student, CurrentUsrType } from "../custom-types/UserTypes";
+import { API_URL } from "./service-info";
 
-
-const API_URL = "https://recycle-ranger-api.onrender.com/api/v1";
 
 export interface SuccessResponseSignUpTeacher {
   username: string;
@@ -18,17 +18,17 @@ export interface LoginSuccessResponse {
   type: UsrType;
 }
 
-async function save(key: string, value: string) {
-  await SecureStore.setItemAsync(key, value);
-}
-
-async function getValue(key: string) {
-  return await SecureStore.getItemAsync(key);
-}
-
-async function deleteValue(key: string) {
-  await SecureStore.deleteItemAsync(key);
-}
+export const storage = {
+  set: async (key: string, value: string) => {
+    await SecureStore.setItemAsync(key, value);
+  },
+  get: async (key: string) => {
+    return await SecureStore.getItemAsync(key);
+  },
+  remove: async (key: string) => {
+    await SecureStore.deleteItemAsync(key);
+  }
+};
 
 function decodeJwt(token: string) {
   return JSON.parse(
@@ -42,6 +42,7 @@ function isTokenExpired(token: string): boolean {
   try {
     const decodedToken = decodeJwt(token);
     if (!decodedToken || !decodedToken.exp) {
+      console.log("err");
       // Token or expiry time is missing
       return true;
     }
@@ -51,6 +52,7 @@ function isTokenExpired(token: string): boolean {
 
     return currentTime >= tokenExpiryTime;
   } catch (error) {
+    console.log(error);
     // Invalid token format or unable to decode
     return true;
   }
@@ -73,7 +75,7 @@ class AuthService {
     password: string,
     username: string,
     id?: number,
-  ): Promise<LoginSuccessResponse> {
+  ): Promise<CurrentUsrType> {
 
     let loginUrl: string = "";
     let urlSearchParams: searchParams;
@@ -117,7 +119,7 @@ class AuthService {
       }
     }
 
-    return new Promise<LoginSuccessResponse>((resolve, reject) => {
+    return new Promise<CurrentUsrType>((resolve, reject) => {
       axios
         .post(
           `${API_URL}${loginUrl}`,
@@ -131,7 +133,13 @@ class AuthService {
         )
         .then((res) => {
           const loginResponse: LoginSuccessResponse = res.data;
-          resolve(loginResponse);
+          const currUsr: CurrentUsrType = {
+            token: loginResponse.access_token,
+            type: loginResponse.type,
+            user: loginResponse.usr,
+          };
+          storage.set("access_token", loginResponse.access_token);
+          resolve(currUsr);
         })
         .catch((err) => {
           reject(err.response.data.detail);
@@ -140,7 +148,7 @@ class AuthService {
   }
 
   logout() {
-    deleteValue("access_token")
+    storage.remove("access_token")
   }
 
   async register(
@@ -173,15 +181,37 @@ class AuthService {
   }
 
 
-  getCurrentUser() {
-    getValue("access_token")
-      .then((res) => {
-        if (res) {
-          if (!isTokenExpired(res)) {
-            // TODO
+  async getCurrentUser(): Promise<CurrentUsrType> {
+    return new Promise<CurrentUsrType>((resolve, reject) => {
+      storage.get("access_token")
+        .then((token) => {
+          console.log(token);
+          if (token && !isTokenExpired(token)) {
+            axios
+              .get(
+                `${API_URL}/auth/me`,
+                {
+                  headers: {
+                    'Accept': "application/json",
+                    'Authorization': `Bearer ${token}`
+                  }
+                }
+              )
+              .then(async (res) => {
+                const currUsr: CurrentUsrType = { ...res.data, token: token };
+                resolve(currUsr);
+              })
+              .catch((err) => {
+                reject(err.response.data.detail);
+              })
+          } else {
+            reject("Not Loged in");
           }
-        }
-      })
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+    })
   }
 }
 

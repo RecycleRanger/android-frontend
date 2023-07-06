@@ -4,11 +4,11 @@
     "slug": "android-frontend",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/RecycleRangerLogo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/AndroidS.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,15 +19,21 @@
       "supportsTablet": true
     },
     "android": {
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-	  "softwareKeyboardLayoutMode": "pan",
+      "package": "com.recycleranger.androidfontend"
     },
     "web": {
       "bundler": "metro",
       "favicon": "./assets/images/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a686b036-6a59-4e38-b009-0c8ae1ba478a"
+      }
     }
   }
 }
