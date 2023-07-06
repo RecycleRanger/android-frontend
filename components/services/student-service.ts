@@ -9,6 +9,11 @@ export type StudentsOfClass = {
   class_id: number;
 }
 
+export interface GeneratedPasscode {
+  student_id: number,
+  passcode: string,
+}
+
 export type Class = StudentsOfClass[];
 
 export const StudentService = {
@@ -63,6 +68,53 @@ export const StudentService = {
         .catch((err) => {
           reject(err.response.data.detail);
         })
+    });
+  },
+  autogenerateClass: async (num: number, token: string, skip = 0, limit = 100) => {
+    return new Promise<Array<GeneratedPasscode>>((resolve, reject) => {
+      axios
+        .post(
+          `${API_URL}/class/autogenerate/${num}`,
+          '',
+          {
+            params: {
+              'skip': skip,
+              'limit': limit
+            },
+            headers: {
+              'Accept': "application/json",
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          }
+        )
+        .then(async (res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          reject(err.response.data.detail);
+        })
+    });
+  },
+  startGame: async (token: string) => {
+    return new Promise((resolve, reject) => {
+      axios
+        .patch(
+          `${API_URL}/class/start_game`,
+          '',
+          {
+            headers: {
+              'Accept': "application/json",
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        )
+        .then(async (res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          reject(err.response.data.detail);
+        });
     });
   },
 };

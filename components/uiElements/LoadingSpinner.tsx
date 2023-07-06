@@ -26,7 +26,8 @@ const styles = StyleSheet.create({
 	},
     message: {
 		fontWeight: "bold",
-        fontSize: 19,
+        fontSize: 23,
+        color: 'white',
     },
 });
 
