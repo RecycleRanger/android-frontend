@@ -109,6 +109,7 @@ const leaderStyles = StyleSheet.create({
     backgroundColor: "#e7e6e5",
     width: 340,
     borderRadius: 18,
+    marginBottom: '15%',
   },
   List: {
     flexDirection: 'column',
@@ -120,6 +121,8 @@ const leaderStyles = StyleSheet.create({
     fontWeight: '600',
     color: "#6aad5f",
     justifyContent: 'flex-start',
+    marginTop: '11%',
+    marginBottom: '1%',
   },
 });
 
